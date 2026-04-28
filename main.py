@@ -1,28 +1,33 @@
 # ---- Usage ----
-from typing import List
-
-from models.Orchestrator import run_pipeline
-from models.agent import Agent, AgentState, PlannerAgent, ResponseAgent, ShipmentContextAgent
+from models import (
+    MultiAgentOrchestrator,
+    PlannerAgent,
+    ReviewerAgent,
+    ShipmentContextAgent,
+    WriterAgent,
+)
 
 
 def main():
-    state = AgentState(user_request="Where is my shipment?")
+    orchestrator = MultiAgentOrchestrator(
+            agents=[
+                PlannerAgent(),
+                ShipmentContextAgent(),
+                WriterAgent(),
+                ReviewerAgent(),
+            ]
+        )
 
-    agents: List[Agent] = [
-        PlannerAgent(),
-        ShipmentContextAgent(),
-        ResponseAgent(),
-    ]
+    result = orchestrator.run(
+        "Write a customer support response for a delayed shipment."
+    )
 
-    final_state = run_pipeline(state, agents)
+    print("Final Answer:")
+    print(result.final_answer)
 
-    print("\nMessages:")
-    for m in final_state.messages:
-        print("-", m)
-
-    print("\nFinal Answer:")
-    print(final_state.final_answer)
+    print("\nExecution Trace:")
+    for message in result.messages:
+        print("-", message)
 
 if __name__ == "__main__":
     main()
-    
